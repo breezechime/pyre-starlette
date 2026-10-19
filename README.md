@@ -1,5 +1,12 @@
 # pyre-starlette
 
+<p>
+  <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Starlette-1.0%2B-1f6feb?logo=starlette&logoColor=white" alt="Starlette">
+  <img src="https://img.shields.io/badge/license-MIT-blue" alt="License">
+  <img src="https://img.shields.io/badge/OpenAPI-3.0-85ea2d" alt="OpenAPI 3.0">
+</p>
+
 基于 [Starlette](https://www.starlette.dev/) 的异步 Web 框架：**控制器路由、参数注入、依赖注入、
 统一响应、OpenAPI 文档与代码生成**。
 
@@ -7,6 +14,46 @@
 [pyre-injector](https://github.com/breezechime/pyre-injector)（依赖注入）、
 [sqlalchemy-db](https://github.com/breezechime/sqlalchemy-db)（ORM 增强），
 把「写接口」压缩成声明式的注解。
+
+## ✨ 特点
+
+- 🛣 **两种路由写法** — 函数式 `@app.router.get(...)` 与控制器式 `@controller(...)` + `@route(...)`。
+- 📐 **按定义顺序注册** — 控制器内路由严格按书写顺序注册，静态路由不会被参数路由抢先匹配。
+- 💉 **参数注入** — `Query` / `Body` / `Path` / `Header` / `Cookie` 五种来源，支持单参数、`Annotated` 与 Pydantic 模型。
+- 📤 **响应模型校验** — `response_model` 自动校验与序列化，支持 `List[...]`、标量、泛型与 `by_alias`。
+- ⚠️ **统一异常体系** — `ApplicationException` 家族（400/401/403/404/405/415/419/500…），消息可注册与本地化。
+- 🧩 **依赖注入** — 复用 pyre-injector：控制器构造注入、`provider()` / `autowired()`、`BaseService` 自动注册。
+- ⚙️ **配置驱动** — 复用 pyre-config：多源、多环境、环境变量与命令行覆盖，配置即 `AppConfig` 模型。
+- 🗄 **数据库集成** — 复用 sqlalchemy-db：自动建引擎、请求级事务中间件、`models.Model` 声明式模型。
+- 📖 **OpenAPI 3.0** — 从路由元数据自动生成 spec，内置 Swagger / ReDoc / RapiDoc 三套 UI，可加 Basic Auth。
+- 🔗 **请求上下文** — `get_request()` / `try_get_request()` 在任意位置取当前请求。
+- ⏱ **后台任务** — `app.add_background_task()` 自动适配 sync/async 与调用上下文，支持错误回调。
+- 📡 **事件总线** — `event.listen` / `event.emit` 解耦模块间通信。
+- 🏗 **CLI 与代码生成** — `pyre new / run / make / list / eject / doctor`，支持内联字段、反射已有表、解析已有模型与增量同步。
+
+## 📦 安装
+
+```bash
+pip install pyre-starlette
+```
+
+`pyre-config`、`pyre-injector`、`sqlalchemy-db` 会作为依赖自动安装。
+
+按需安装可选能力：
+
+```bash
+pip install "pyre-starlette[cli]"        # uvicorn，用于 pyre run / app.run()
+pip install "pyre-starlette[auth]"       # authlib + werkzeug，JWT 与密码哈希
+pip install "pyre-starlette[redis]"      # redis
+pip install "pyre-starlette[scheduler]"  # apscheduler 定时任务
+pip install "pyre-starlette[async]"      # greenlet + aiosqlite，异步数据库
+pip install "pyre-starlette[all]"
+```
+
+`Jinja2`、`colorlog`、`pydantic>=2`、`starlette>=1.0` 为核心依赖。
+Flask 仅在使用 `PyreJSONProvider` 时才需要，缺失不影响框架启动。
+
+## 💡 一个简单的例子
 
 ```python
 from typing import Annotated, Optional
@@ -39,46 +86,38 @@ INFO:  Uvicorn running on http://127.0.0.1:8000
 
 访问 `/docs` 即可拿到自动生成的 Swagger UI。
 
-## 特性
+## 👩‍💻 目录结构
 
-- **两种路由写法** — 函数式 `@app.router.get(...)` 与控制器式 `@controller(...)` + `@route(...)`。
-- **按定义顺序注册** — 控制器内的路由严格按代码书写顺序注册，静态路由不会被参数路由抢先匹配。
-- **参数注入** — `Query` / `Body` / `Path` / `Header` / `Cookie` 五种来源，支持单参数、`Annotated` 与
-  Pydantic 模型（`query_model` / `body_model` / `header_model` / `cookie_model`）。
-- **响应模型校验** — `response_model` 自动校验与序列化，支持 `List[...]`、标量、泛型与 `by_alias` 控制。
-- **统一异常体系** — `ApplicationException` 家族（400/401/403/404/405/415/419/500…），错误消息可注册与本地化。
-- **依赖注入** — 直接复用 pyre-injector：控制器构造注入、`provider()` / `autowired()` 手动取用、`BaseService` 自动注册。
-- **配置驱动** — 复用 pyre-config：多源、多环境、环境变量与命令行覆盖，配置即 `AppConfig` 模型。
-- **数据库集成** — 复用 sqlalchemy-db：自动建引擎、请求级事务中间件、`models.Model` 声明式模型。
-- **OpenAPI 3.0** — 从路由元数据自动生成 spec，内置 Swagger / ReDoc / RapiDoc 三套 UI，可选 Basic Auth 保护。
-- **请求上下文** — `get_request()` / `try_get_request()` 在任意位置取当前请求。
-- **后台任务** — `app.add_background_task()` 自动适配 sync/async 与调用上下文，支持错误回调。
-- **事件总线** — `event.listen` / `event.emit` 解耦模块间通信。
-- **CLI 与代码生成** — `pyre new / run / make / list / eject / doctor`，可生成空壳、按内联字段、反射已有表或解析已有模型，并支持模型到 schema 的增量同步。
-
-## 安装
-
-```bash
-pip install pyre-starlette
+```text
+pyre-starlette
+├── pyre_starlette
+│   ├── __init__.py       # 对外导出
+│   ├── app.py            # PyreStarlette 应用
+│   ├── routing.py        # Router 与路由注册
+│   ├── controller.py     # @controller 控制器
+│   ├── decorator.py      # @route 等装饰器
+│   ├── params.py         # Query / Body / Path / Header / Cookie
+│   ├── responses.py      # 统一响应与序列化
+│   ├── requests.py       # 请求上下文
+│   ├── service.py        # BaseService
+│   ├── middleware.py     # 中间件
+│   ├── background.py     # 后台任务
+│   ├── events.py         # 事件总线
+│   ├── security/         # 认证与权限
+│   ├── exceptions/       # 异常体系与处理器
+│   ├── openapi/          # spec 生成与文档 UI
+│   ├── models/           # 模型与 schema 基类
+│   ├── templates/        # 代码生成模板
+│   ├── applications/     # 应用装配
+│   ├── config.py         # 配置集成
+│   ├── logger.py         # 日志
+│   └── cli.py            # 命令行入口
+├── examples/
+├── tests/
+└── setup.py
 ```
 
-`pyre-config`、`pyre-injector`、`sqlalchemy-db` 会作为依赖自动安装。
-
-按需安装可选能力：
-
-```bash
-pip install "pyre-starlette[cli]"        # uvicorn，用于 pyre run / app.run()
-pip install "pyre-starlette[auth]"       # authlib + werkzeug，JWT 与密码哈希
-pip install "pyre-starlette[redis]"      # redis
-pip install "pyre-starlette[scheduler]"  # apscheduler 定时任务
-pip install "pyre-starlette[async]"      # greenlet + aiosqlite，异步数据库
-pip install "pyre-starlette[all]"
-```
-
-`Jinja2`、`colorlog`、`pydantic>=2`、`starlette>=1.0` 为核心依赖。
-Flask 仅在使用 `PyreJSONProvider` 时才需要，缺失不影响框架启动。
-
-## 快速开始
+## 🚀 快速开始
 
 ### 目录约定
 
@@ -142,7 +181,7 @@ python app.py
 pyre run --host 0.0.0.0 --port 8000
 ```
 
-## 应用与配置
+## ⚙️ 应用与配置
 
 ### PyreStarlette 构造参数
 
@@ -197,7 +236,7 @@ app = PyreStarlette(app_config=AppConfig(
 ))
 ```
 
-## 路由
+## 🛣 路由
 
 ### 函数式
 
@@ -295,7 +334,7 @@ class AdminController(Controller):
 `summary` / `description` / `tags` / `include_openapi` / `include_operation_log` 既可写在
 `@route` 上，也可写在 `@controller` 上作为整组的默认值。这些元数据会进入 OpenAPI spec。
 
-## 参数注入
+## 💉 参数注入
 
 函数参数按顺序依次从**路径 → 查询 → 请求头 → Cookie → 请求体**中解析（`query_model` /
 `body_model` 等显式模型参数优先）。
@@ -381,7 +420,7 @@ def whoami(request: Request, page: int = 1):
 {"code": 400, "msg": "请求参数校验错误, 字段 'name' 必填项"}
 ```
 
-## 响应与序列化
+## 📤 响应与序列化
 
 ### 返回值
 
@@ -450,7 +489,7 @@ def list_items():
     return response(data=[{'id': 1}], total=1)
 ```
 
-## 异常与错误处理
+## ⚠️ 异常与错误处理
 
 ### 异常体系
 
@@ -506,7 +545,7 @@ register_messages({'Not Found Data': '数据不存在'})
 
 未捕获异常统一返回 500，并由 `logger.error` 记录堆栈。
 
-## 依赖注入
+## 🧩 依赖注入
 
 框架内置的 `PyreStarlette` / `AppConfig` / `Environment` / `PyreLogger` / `SQLAlchemyDB` /
 `State` / `OpenAPI` 等对象在 `init_app()` 时已注入容器。
@@ -561,7 +600,7 @@ class OrderService(BaseService):
 常用工具方法：`service_general_save` / `service_filter` / `service_order_by` / `provider` /
 `add_background_task`。
 
-## 中间件与请求上下文
+## 🔗 中间件与请求上下文
 
 `RequestContextMiddleware` 永远是**第一个**中间件，它把当前 `Request` 绑定到 `ContextVar`：
 
@@ -607,7 +646,7 @@ from pyre_starlette.middleware import CORSMiddleware
 app.add_middleware(CORSMiddleware, allow_origins=['*'], allow_methods=['*'], allow_headers=['*'])
 ```
 
-## 后台任务
+## ⏱ 后台任务
 
 ```python
 @app.router.get('/notify')
@@ -634,7 +673,7 @@ def cleanup():
     return Response({'ok': True}, background=tasks)
 ```
 
-## 事件
+## 📡 事件
 
 ```python
 from pyre_starlette import event, Event
@@ -651,7 +690,7 @@ event.emit(Event('user.created', {'id': 1}))
 
 监听函数按参数个数自动适配：0 个参数收到空调用、1 个参数收到 `data`、2 个及以上收到 `(name, data)`。
 
-## 安全
+## 🔐 安全
 
 ```python
 from pyre_starlette.security import HTTPBasicAuth, HTTPTokenAuth, HTTPApiKeyAuth
@@ -681,7 +720,7 @@ def admin():
 认证失败返回 401 并带 `WWW-Authenticate`；角色不足或 `authorize()` 返回 `False` 返回 403。
 被 `login_required` 保护的接口会自动写入 OpenAPI 的 `securitySchemes`。
 
-## 数据库
+## 🗄 数据库
 
 `pyre.datasource` 存在时，`init_app()` 会自动建引擎、注入 `SQLAlchemyDB` 并挂上
 `DatabaseMiddleware`（请求级事务）。
@@ -725,7 +764,7 @@ def do_something(db: SQLAlchemyDB):
 
 也可通过 `autowired(SQLAlchemyDB)` 或 `provider(SQLAlchemyDB)` 取用。
 
-## 日志
+## 📝 日志
 
 基于 `colorlog`，控制台带颜色、文件为纯文本，并提供**线程级日志收集器**
 （非主线程写入的日志可在同一线程内取出，适合把任务日志回传给接口调用方）。
@@ -750,7 +789,7 @@ app.logging.thread_log_handler.get_log_data()    # 当前线程已收集的日�
 
 `NOTICE` 是框架注册的额外日志级别（数值 28），介于 INFO 与 WARNING 之间。
 
-## OpenAPI 文档
+## 📖 OpenAPI 文档
 
 ```python
 from pyre_starlette import PyreStarlette
@@ -788,7 +827,7 @@ def handler():
 不需要文档时：`PyreStarlette(include_openapi=False)`，或 `OpenapiConfig(enable=False)`
 （后者会同时移除文档路由并把 `app.openapi` 置为 `None`）。
 
-## CLI
+## ⌨️ CLI
 
 安装 `pyre-starlette[cli]` 后可用 `pyre` 命令：
 
@@ -812,7 +851,7 @@ pyre eject module/models.py            # 导出模板到项目 templates/ 后即
 `-n/--dry-run` 预览、`-v/--verbose` 打印内容、`-R/--register` 自动写入
 `apps/__init__.py` 注册表。详见 [pyre-docs](https://github.com/breezechime/pyre-starlette)。
 
-## API 参考
+## 📚 API 参考
 
 | 名称 | 说明 |
 | --- | --- |
@@ -834,7 +873,7 @@ pyre eject module/models.py            # 导出模板到项目 templates/ 后即
 | `PyreStarletteOpenapi` / `PyreStarletteOpenapiGenerator` | OpenAPI 文档与生成器 |
 | `Middleware` / `CORSMiddleware` / `BaseHTTPMiddleware` | 中间件 |
 
-## 开发
+## 🛠 开发
 
 ```bash
 pip install -e ".[all]" pytest httpx
@@ -850,6 +889,6 @@ python examples/config_and_database.py   # 配置加载与 SQLite CRUD
 python examples/openapi.py               # OpenAPI 与文档路由
 ```
 
-## 许可
+## 📄 许可
 
 本项目基于 [MIT](LICENSE) 许可开源。
