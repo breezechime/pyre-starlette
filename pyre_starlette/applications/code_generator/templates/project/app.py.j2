@@ -1,0 +1,23 @@
+"""{{ project_name }} 应用入口。"""
+
+from pyre_starlette import PyreStarlette
+from pyre_starlette.middleware import CORSMiddleware
+
+from apps import admin_router, api_router
+
+app = PyreStarlette()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
+
+app.add_router(api_router, prefix='/api')
+app.add_router(admin_router, prefix='/admin')
+
+
+if __name__ == '__main__':
+    app.run()

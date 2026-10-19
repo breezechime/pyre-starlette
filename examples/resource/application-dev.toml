@@ -1,0 +1,7 @@
+# 环境配置（dev）：覆盖基础配置里的数据源
+[pyre.datasource]
+url = "sqlite:///./resource/example.db"
+echo = false
+
+[pyre.application]
+secret_key = "dev-secret"

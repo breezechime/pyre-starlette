@@ -1,0 +1,13 @@
+# 开发环境配置（覆盖 application.toml）
+[pyre.config]
+env = 'dev'
+
+# 主库
+[pyre.datasource]
+url = '{{ dsn }}'
+echo = false
+pool_pre_ping = true
+pool_recycle = 3600
+pool_size = 5
+max_overflow = 10
+pool_timeout = 30

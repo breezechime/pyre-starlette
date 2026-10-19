@@ -1,0 +1,7 @@
+# 基础配置：声明当前生效的环境
+[pyre.config]
+env = "dev"
+
+[server]
+host = "127.0.0.1"
+port = 8123

@@ -1,0 +1,12 @@
+# 公共配置：所有环境共用
+[pyre.config]
+env = 'dev'
+
+[server]
+host = '127.0.0.1'
+port = {{ port }}
+
+[pyre.openapi]
+enable = true
+title = '{{ project_name }}'
+version = '0.0.1'

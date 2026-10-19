@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pyre Starlette</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            overflow: hidden;
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+            background:
+                radial-gradient(circle at top, #3f7cff 0%, transparent 40%),
+                linear-gradient(135deg, #111827 0%, #0f172a 100%);
+            color: #fff;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 760px;
+            padding: 60px;
+        }
+
+        .rocket {
+            font-size: 90px;
+            animation: float 2.5s ease-in-out infinite;
+            user-select: none;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        h1 {
+            margin-top: 20px;
+            font-size: 52px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            margin-top: 14px;
+            font-size: 20px;
+            color: #cbd5e1;
+        }
+
+        .version {
+            display: inline-block;
+            margin-top: 24px;
+            padding: 8px 18px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.12);
+            color: #7dd3fc;
+            font-size: 14px;
+        }
+
+        .cards {
+            margin-top: 48px;
+
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            width: 180px;
+            background: rgba(255,255,255,.06);
+            border: 1px solid rgba(255,255,255,.08);
+            backdrop-filter: blur(8px);
+
+            border-radius: 16px;
+            padding: 22px;
+        }
+
+        .card h3 {
+            color: #38bdf8;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        .card p {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .footer {
+            margin-top: 50px;
+            color: rgba(255,255,255,.55);
+            font-size: 14px;
+        }
+
+        code {
+            color: #38bdf8;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="rocket">🚀</div>
+
+    <h1>Pyre Starlette</h1>
+
+    <div class="subtitle">
+        一个由Starlette驱动的现代Python网络框架
+    </div>
+
+    <div class="version">
+        版本 {{ version }}
+    </div>
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>Python版本</h3>
+            <p>{{ python_version }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Starlette版本</h3>
+            <p>{{ starlette_version }}</p>
+        </div>
+
+        <div class="card">
+            <h3>状态</h3>
+            <p>运行中...</p>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        恭喜！您的<code>Pyre Starlette</code>应用程序已成功运行。
+        <br><br>
+        开始构建你的下一个项目。
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+include LICENSE
+include README.md
+
+recursive-include pyre_starlette py.typed
+recursive-include pyre_starlette *.html
+recursive-include pyre_starlette/applications/code_generator/templates *.j2
+
+recursive-include examples *.py *.toml *.yaml *.yml *.json
+recursive-include tests *.py
+
+global-exclude __pycache__/* *.py[cod]

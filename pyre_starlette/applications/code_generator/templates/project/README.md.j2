@@ -1,0 +1,43 @@
+# {{ project_name }}
+
+基于 [pyre-starlette](https://pypi.org/project/pyre-starlette/) 创建的项目。
+
+## 快速开始
+
+```bash
+pip install -r requirements.txt   # 或 pip install pyre-starlette[cli]
+python app.py                     # 等价于 pyre run
+```
+
+启动后：
+
+- 首页 `http://127.0.0.1:{{ port }}/`
+- OpenAPI 文档 `http://127.0.0.1:{{ port }}/docs`
+- 业务路由前缀 `/api`（`api_router`）与 `/admin`（`admin_router`）
+
+## 目录结构
+
+```
+{{ project_name }}/
+├── app.py                     # 应用入口
+├── apps/
+│   ├── __init__.py            # api_router / admin_router
+│   └── <分组>/<模块>/          # 业务模块
+│       ├── enums.py
+│       ├── models.py
+│       ├── schema.py
+│       ├── service.py
+│       └── controller.py
+└── resource/
+    ├── application.toml       # 公共配置
+    └── application-dev.toml   # 开发环境配置（数据源）
+```
+
+## 生成一个新模块
+
+```bash
+pyre make module article -a content        # 空壳模块
+pyre make crud article -t content_article  # 按已有表生成
+```
+
+生成后把控制器 import 到 `apps/__init__.py`，或用 `-R` 让 CLI 自动写入。

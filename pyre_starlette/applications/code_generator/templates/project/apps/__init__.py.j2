@@ -1,0 +1,13 @@
+"""{{ project_name }} 路由注册表。
+
+新增模块后，把它的控制器 import 到本文件即可完成路由挂载 ——
+``@controller(..., router=api_router)`` 会在 import 时把路由登记到对应路由器。
+"""
+
+from pyre_starlette import Router
+
+api_router = Router()
+admin_router = Router()
+
+# 生成模块后追加 import（`pyre make module <模块> -a <分组> -R` 会自动写入）：
+# from .<分组>.<模块>.controller import <模块>Controller  # noqa

@@ -1,0 +1,41 @@
+"""{{ spec.comment }}控制器。"""
+
+{% if spec.router %}from {{ spec.router_module }} import {{ spec.router_attr }}
+
+{% endif %}from pyre_starlette import controller, route
+
+from .schema import (
+    {{ spec.class_name }}ListParams,
+    {{ spec.class_name }}PageResponse,
+    {{ spec.class_name }}Params,
+    {{ spec.class_name }}Response,
+)
+from .service import {{ spec.service_class }}
+
+
+@controller('{{ spec.path }}', summary='{{ spec.comment }}控制器'{% if spec.router %}, router={{ spec.router_attr }}{% endif %})
+class {{ spec.controller_class }}:
+    """{{ spec.comment }}控制器"""
+
+    def __init__(self, service: {{ spec.service_class }}):
+        self.service: {{ spec.service_class }} = service
+
+    @route('/{id:int}', summary='获取{{ spec.comment }}详情', response_model={{ spec.class_name }}Response)
+    def get_by_id(self, id: int):
+        """获取{{ spec.comment }}详情。"""
+        return self.service.get_by_id(id)
+
+    @route(summary='获取{{ spec.comment }}列表', query_model={{ spec.class_name }}ListParams, response_model={{ spec.class_name }}PageResponse)
+    def list(self, params: {{ spec.class_name }}ListParams):
+        """获取{{ spec.comment }}列表。"""
+        return self.service.get_list(params)
+
+    @route(methods=['POST'], body_model={{ spec.class_name }}Params, summary='保存{{ spec.comment }}', response_model={{ spec.class_name }}Response)
+    def save(self, params: {{ spec.class_name }}Params):
+        """新增或更新{{ spec.comment }}。"""
+        return self.service.save(params)
+
+    @route('/delete', methods=['DELETE'], summary='删除{{ spec.comment }}')
+    def delete(self, id: int):
+        """删除{{ spec.comment }}。"""
+        return self.service.delete_by_id(id)

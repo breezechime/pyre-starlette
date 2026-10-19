@@ -1,0 +1,29 @@
+"""{{ spec.comment }}业务。"""
+
+from pyre_starlette import BaseService, Page
+
+from .models import {{ spec.class_name }}
+from .schema import {{ spec.class_name }}ListParams, {{ spec.class_name }}Params
+
+
+class {{ spec.service_class }}(BaseService):
+    """{{ spec.comment }}"""
+
+    model_class = {{ spec.class_name }}
+
+    def get_by_id(self, id: int) -> {{ spec.class_name }}:
+        """按主键获取{{ spec.comment }}。"""
+        return self.model_class.query.get_by_id_or_404(id)
+
+    def get_list(self, params: {{ spec.class_name }}ListParams) -> Page:
+        """分页获取{{ spec.comment }}列表。"""
+        page = Page(page=params.page, page_size=params.page_size)
+        return self.model_class.query.select_page(page, *self.service_filter(params))
+
+    def save(self, params: {{ spec.class_name }}Params) -> {{ spec.class_name }}:
+        """新增或更新{{ spec.comment }}。"""
+        return self.service_general_save(params)
+
+    def delete_by_id(self, id: int) -> int:
+        """删除{{ spec.comment }}。"""
+        return self.model_class.query.delete_by_id_or_404(id)

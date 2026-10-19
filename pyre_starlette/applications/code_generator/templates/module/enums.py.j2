@@ -1,0 +1,21 @@
+"""{{ spec.comment }}枚举定义。"""
+
+import enum
+
+{% if spec.needed_enums %}{% for field in spec.needed_enums %}
+
+class {{ field.enum_member_name() }}(enum.{{ field.enum_base }}):
+    """{{ field.comment or field.enum_member_name() }}"""
+
+    # TODO: 按业务补充枚举成员，占位成员保证字段开箱可读写
+    #       EnumField 按成员名存取，StrEnumField / IntEnumField 按成员值存取
+    {{ field.enum_placeholder }}
+{% endfor %}{% else %}
+
+# TODO: 补充枚举，例如
+# class {{ spec.class_name }}Status(enum.Enum):
+#     """{{ spec.comment }}状态"""
+#
+#     ENABLED = 'enabled'
+#     DISABLED = 'disabled'
+{% endif %}

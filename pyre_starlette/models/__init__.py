@@ -1,0 +1,1 @@
+from sqlalchemy_db.models import *  # noqa

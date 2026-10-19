@@ -1,0 +1,43 @@
+"""{{ spec.comment }}请求与返回对象。"""
+
+{% for line in spec.schema_imports %}{{ line }}
+{% endfor %}
+
+
+class {{ spec.class_name }}Base(BaseModel):
+    """{{ spec.comment }}公共字段"""
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class {{ spec.class_name }}ListParams(BaseModel):
+    """{{ spec.comment }}列表查询参数"""
+
+    page: int = Field(default=1, ge=1, description='页码')
+    page_size: int = Field(default=20, ge=1, le=200, description='页大小')
+
+    # TODO: 追加筛选条件，例如
+    # name: Optional[str] = Field(None, description='名称')
+
+
+class {{ spec.class_name }}Params({{ spec.class_name }}Base):
+    """{{ spec.comment }}保存参数"""
+
+{% for line in spec.schema_param_fields %}
+    {{ line }}
+{% endfor %}
+
+
+class {{ spec.class_name }}Response({{ spec.class_name }}Base):
+    """{{ spec.comment }}返回对象"""
+
+{% for line in spec.schema_response_fields %}
+    {{ line }}
+{% endfor %}
+
+
+class {{ spec.class_name }}PageResponse({{ spec.class_name }}Base):
+    """{{ spec.comment }}分页返回对象"""
+
+    count: int = Field(default=0, description='总条数')
+    data: list[{{ spec.class_name }}Response] = Field(default_factory=list, description='数据')

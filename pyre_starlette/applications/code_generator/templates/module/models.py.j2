@@ -1,0 +1,21 @@
+"""{{ spec.comment }}模型定义。"""
+
+from pyre_starlette import models
+
+{% if spec.enum_import_line %}{{ spec.enum_import_line }}
+
+{% endif %}
+
+class {{ spec.class_name }}({{ spec.bases }}):
+    """{{ spec.comment }}"""
+
+    __tablename__ = '{{ spec.table_name }}'
+    __table_args__ = {'comment': {{ spec.comment_literal }}}
+
+{% if spec.model_fields %}{% for line in spec.model_fields %}
+    {{ line }}
+{% endfor %}
+{% else %}
+    # TODO: 补充字段，例如
+    # name = models.StringField(64, nullable=False, comment='名称')
+{% endif %}
