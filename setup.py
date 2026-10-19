@@ -37,7 +37,7 @@ setup(
         'Jinja2>=3.0',
         'pyre-config>=1.0.0',
         'pyre-injector>=1.0.0',
-        'sqlalchemy-db>=1.0.0',
+        'pyre-sqlalchemy-db>=1.0.0',
     ],
     extras_require={
         'cli': ['uvicorn'],
