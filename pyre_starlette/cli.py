@@ -9,6 +9,7 @@
     pyre list                    查看生成类型与模板     (ls / l)
     pyre eject <template>        导出模板              (e)
     pyre doctor                  项目自检              (d)
+    pyre lsp install             安装语言服务（编辑器补全）
 
 ``make`` 的 ``<kind>`` 也支持顶层直接调用，例如 ``pyre make c article`` 与 ``pyre c article``
 等价。生成来源由参数决定：给 ``-t/--table`` 走表反射，给 ``-m/--from-model`` 走模型解析，
@@ -17,7 +18,10 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
+import shutil
+import subprocess
 import sys
 import unicodedata
 from typing import List, Optional, Tuple
@@ -53,6 +57,9 @@ FILE_DESCRIPTIONS = {
 #: 默认路由变量（``模块:属性``）
 DEFAULT_ROUTER = 'apps:api_router'
 ADMIN_ROUTER = 'apps:admin_router'
+
+#: 语言服务仓库（不在 PyPI 发布，直接从源码装）
+LSP_REPO = 'https://github.com/breezechime/pyre-lsp.git'
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -129,6 +136,35 @@ def build_parser() -> argparse.ArgumentParser:
     # ---- doctor ----
     subparsers.add_parser('doctor', aliases=['d'], help='项目自检（目录、数据源、模块清单）')
 
+    # ---- lsp ----
+    lsp_parser = subparsers.add_parser(
+        'lsp',
+        help='安装 / 配置 pyre 语言服务（编辑器补全）',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=_lsp_epilog(),
+    )
+    lsp_subparsers = lsp_parser.add_subparsers(dest='lsp_action', metavar='<action>')
+
+    lsp_install = lsp_subparsers.add_parser(
+        'install',
+        help='从 GitHub 安装 pyre-lsp',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    lsp_install.add_argument('-r', '--ref', default='main', help='Git 分支 / 标签 / 提交')
+    lsp_install.add_argument('-u', '--upgrade', action='store_true', help='已安装时强制重装最新版')
+    lsp_install.add_argument('-i', '--index', default='', help='pip 索引地址（缺省用 pip 全局配置）')
+    lsp_install.add_argument('-n', '--dry-run', action='store_true', help='只打印命令，不执行安装')
+
+    lsp_config = lsp_subparsers.add_parser(
+        'config',
+        help='打印编辑器配置片段',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    lsp_config.add_argument('-e', '--editor', choices=['vscode', 'jetbrains'], default='vscode',
+                            help='目标编辑器')
+
+    lsp_subparsers.add_parser('status', help='查看 pyre-lsp 是否已安装')
+
     # ---- 兼容旧命令 templates ----（保持 sync 的 nargs='?' 使 JSON 提取正常）
     templates_parser = subparsers.add_parser('templates', help=argparse.SUPPRESS)
     templates_parser.add_argument('templates_action', nargs='?', default=None, help=argparse.SUPPRESS)
@@ -180,6 +216,20 @@ def _add_generation_arguments(parser: argparse.ArgumentParser, name: str) -> Non
 
 def _kind_head(name: str, aliases) -> str:
     return name if not aliases else f'{name} | {", ".join(aliases)}'
+
+
+def _lsp_epilog() -> str:
+    return '\n'.join([
+        '语言服务（pyre-lsp）不在 PyPI 发布，直接从 GitHub 源码安装:',
+        '',
+        '  pyre lsp install                 安装 / 更新',
+        '  pyre lsp install -r v0.1.0       指定分支、标签或提交',
+        '  pyre lsp config -e vscode        打印 VS Code settings.json 片段',
+        '  pyre lsp config -e jetbrains     打印 LSP4IJ 配置',
+        '  pyre lsp status                  查看安装路径',
+        '',
+        '安装完成后把编辑器里的 serverPath 指向 `pyre lsp status` 给出的可执行文件。',
+    ])
 
 
 def _make_epilog() -> str:
@@ -237,6 +287,8 @@ def main(argv: Optional[List[str]] = None) -> None:
             handle_eject(args)
         elif command in ('doctor', 'd'):
             handle_doctor(args)
+        elif command == 'lsp':
+            handle_lsp(args)
         elif command == 'templates':
             handle_legacy_templates(args)
         else:
@@ -629,6 +681,104 @@ def handle_doctor(args) -> None:
             print(f'  {module}')
     else:
         print('  暂无业务模块（pyre make module <name> -a <分组>）')
+
+
+def handle_lsp(args) -> None:
+    """语言服务：从 GitHub 安装 pyre-lsp，并给出编辑器配置。"""
+    action = getattr(args, 'lsp_action', None)
+    if action == 'install':
+        _lsp_install(args)
+    elif action == 'config':
+        _lsp_config(args)
+    elif action == 'status':
+        _lsp_status()
+    else:
+        print('用法: pyre lsp install | config | status')
+        print('  安装: pyre lsp install [-r <ref>] [-u]')
+        print('  配置: pyre lsp config [-e vscode|jetbrains]')
+        print('  状态: pyre lsp status')
+
+
+def _lsp_install(args) -> None:
+    package = f'git+{LSP_REPO}@{args.ref}' if args.ref else f'git+{LSP_REPO}'
+    cmd = [sys.executable, '-m', 'pip', 'install']
+    if args.upgrade:
+        cmd.append('--upgrade')
+    if args.index:
+        cmd += ['-i', args.index]
+    cmd.append(package)
+
+    print('安装 pyre-lsp（编辑器语言服务）')
+    print(f'  来源: {package}')
+    print(f'  命令: {" ".join(cmd)}')
+
+    if args.dry_run:
+        print('\n未执行（--dry-run）。')
+        return
+
+    try:
+        result = subprocess.run(cmd)
+    except OSError as error:
+        raise RuntimeError(f'无法调用 pip: {error}') from error
+    if result.returncode != 0:
+        raise RuntimeError('安装失败，请检查网络、git 是否可用，或改用 -i 指定镜像源')
+
+    path = lsp_executable()
+    print('\n安装完成')
+    if path:
+        print(f'  可执行文件: {path}')
+        print('  下一步: pyre lsp config -e vscode  # 生成编辑器配置')
+    else:
+        print('  未在 PATH 中找到 pyre-lsp，可能是 pip 安装目录不在 PATH。')
+        print('  可在编辑器配置里改用: python -m pyre_lsp')
+
+
+def lsp_executable() -> str:
+    """返回 pyre-lsp 可执行文件路径，找不到返回空串。"""
+    found = shutil.which('pyre-lsp')
+    if found:
+        return found
+    scripts = os.path.dirname(sys.executable)
+    for name in ('pyre-lsp.exe', 'pyre-lsp'):
+        candidate = os.path.join(scripts, name)
+        if os.path.isfile(candidate):
+            return candidate
+    return ''
+
+
+def _lsp_status() -> None:
+    path = lsp_executable()
+    if path:
+        print('pyre-lsp 已安装')
+        print(f'  可执行文件: {path}')
+        print(f'  回退命令  : {sys.executable} -m pyre_lsp')
+    else:
+        print('pyre-lsp 未安装')
+        print('  安装: pyre lsp install')
+
+
+def _lsp_config(args) -> None:
+    path = lsp_executable()
+    server = path or f'{sys.executable} -m pyre_lsp'
+
+    if args.editor == 'vscode':
+        snippet = {'pyreLsp.serverPath': path or ''}
+        if not path:
+            snippet = {'pyreLsp.serverPath': '', 'pyreLsp.pythonPath': sys.executable}
+        print('VS Code / Cursor —— 写入 .vscode/settings.json:')
+        print(json.dumps(snippet, ensure_ascii=False, indent=2))
+        print('\n也可以直接安装仓库里的扩展：pyre_lsp/vscode/')
+    else:
+        print('IntelliJ / PyCharm —— LSP4IJ 里新建 User-defined Language Server:')
+        print(f'  Command : {path or sys.executable}')
+        print(f'  Arguments: {"" if path else "-m pyre_lsp"}')
+        print('  Working directory: $PROJECT_DIR$')
+        print('\n完整步骤见 pyre-lsp 仓库 README 的 LSP4IJ 一节。')
+
+    if not path:
+        print('\n提示: 未检测到 pyre-lsp，先执行 pyre lsp install')
+
+    print(f'\n当前语言服务命令: {server}')
 
 
 def handle_legacy_templates(args) -> None:

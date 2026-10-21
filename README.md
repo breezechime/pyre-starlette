@@ -844,7 +844,12 @@ pyre sy -m apps/content/article/models.py              # 模型 → schema 增�
 
 pyre list                              # 生成类型与内置模板
 pyre eject module/models.py            # 导出模板到项目 templates/ 后即可覆盖
+pyre lsp install                       # 装编辑器语言服务（补全 / 签名 / Hover）
 ```
+
+`pyre-lsp` 是给 VS Code / Cursor / JetBrains 用的 Language Server，不在 PyPI 发布，
+`pyre lsp install` 会从 GitHub 源码装进当前解释器；`pyre lsp config -e vscode` 直接
+打印可粘贴的 `.vscode/settings.json` 片段。
 
 `<kind>` 可以直接写在 `make` 后面，也可以作为顶层命令，两者等价。生成来源按
 `-t/--table` → `-m/--from-model` → `-f/--fields` → 空壳 的优先级决定；

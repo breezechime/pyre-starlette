@@ -5,7 +5,7 @@ with open('README.md', encoding='utf-8') as f:
 
 setup(
     name='pyre-starlette',
-    version='1.0.0',
+    version='1.0.1',
     author='且听风吟、我是指针*、ZDLAY、KYZ',
     author_email='breezechime@163.com',
     description='基于 Starlette 的异步 Web 框架：控制器路由、参数注入、依赖注入、统一响应、OpenAPI 与代码生成',
